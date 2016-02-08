@@ -24,3 +24,6 @@ ExportedObj/
 
 # Unity3D Generated File On Crash Reports
 sysinfo.txt
+*.log
+Library/metadata/00/*
+Library/metadata/00/00000000000000004000000000000000
