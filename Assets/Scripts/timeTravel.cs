@@ -15,9 +15,12 @@ public class timeTravel : MonoBehaviour {
     Rigidbody body;
    public bool grounded = false;
    public bool rewind = false;
+   public bool pause = false;
+   public bool main = false;
     // Use this for initialization
     void Start() {
         body = GetComponent<Rigidbody>();
+        movementController.moveControl = movementController.moveControl;
     }
     void Awake() {
         //   movementController.moveControl.addTraveller(gameObject);
@@ -25,10 +28,9 @@ public class timeTravel : MonoBehaviour {
     void FixedUpdate() {
         if (index == 0) {
             movementController.moveControl.time_travellers.Add(gameObject);
-
 //            movementController.moveControl.addTraveller(gameObject);
         }
-
+        stopSpasm();
         Vector3 rayOffset = new Vector3(0.22f, 0, 0);
         grounded = Physics.Raycast(transform.position, Vector3.down, transform.localScale.y * .5f + 0.01f)
             || Physics.Raycast(transform.position + rayOffset, Vector3.down, transform.localScale.y * .5f + 0.01f)
@@ -38,18 +40,19 @@ public class timeTravel : MonoBehaviour {
             moments[index].rotation = transform.rotation;
             rail_stop = index;
             if(index==0 || moments[index].position != moments[index-1].position) index++;
+         //   index++;
             last_velocity = body.velocity;
 
         } else {
+            if (index >= rail_stop)
+                derail();
             transform.position = moments[index].position;
             transform.rotation = moments[index].rotation;
             body.velocity = Vector3.zero;
-            if (rewind && index > 0)
+            if (!pause && rewind && index > 0)
                 index--; 
-            else
+            else if(!pause)
             index++;
-            if (index >= rail_stop)
-                derail();
         }
     }
     public void derail() {
@@ -60,14 +63,28 @@ public class timeTravel : MonoBehaviour {
         rail_stop = index;
         body.velocity = last_velocity;
         body.isKinematic = false;
+        movementController.moveControl.enableCollision(number);
     }
     public void goBack(int target_index) {
+        putOnRail();
+        index = target_index;
+    }
+    public void putOnRail() {
         GetComponent<Rigidbody>().useGravity = false;
         body.velocity = Vector3.zero;
         on_rails = true;
         body.isKinematic = true;
-        index = target_index;
+        movementController.moveControl.disableCollision(number);
     }
+    void stopSpasm() {
+        if (body.velocity.magnitude > 10) {
+            Vector3 new_vel = body.velocity;
+            while(new_vel.magnitude> 30)
+            new_vel = new_vel * 0.9f;
+            body.velocity = new_vel;
+        }
+    }
+
     /*
     void OnCollisionStay(Collision collisionInfo) {
 

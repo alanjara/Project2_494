@@ -8,7 +8,9 @@ public class movementController : MonoBehaviour {
     KeyCode RIGHT = KeyCode.RightArrow;
     KeyCode UP = KeyCode.UpArrow;
     KeyCode D_KEY = KeyCode.D;
+    KeyCode R_KEY = KeyCode.R;
     KeyCode F_KEY = KeyCode.F;
+    KeyCode S_KEY = KeyCode.S;
     KeyCode ONE = KeyCode.Alpha1;
     KeyCode TWO = KeyCode.Alpha2;
     KeyCode THREE = KeyCode.Alpha3;
@@ -23,6 +25,7 @@ public class movementController : MonoBehaviour {
     bool left_first = false;
     bool grounded = false;
     bool replay = false;
+    bool pause = false;
     int current_player = 0;
     float small_delay = 0;
     // Use this for initialization
@@ -45,8 +48,7 @@ public class movementController : MonoBehaviour {
             players.Add(chosen);
             temp_players.Remove(chosen);
         }
-        Player = players[0];
-        body = Player.GetComponent<Rigidbody>();
+        makeMain(0);
     }
     // Update is called once per frame
     public void addTraveller(GameObject traveller) {
@@ -76,7 +78,7 @@ public class movementController : MonoBehaviour {
         }
 
         if (Input.GetKey(UP) && Player.GetComponent<timeTravel>().grounded && small_delay == 0) {
-           // Vector3 jump = new Vector3(0, 200, 0);
+            // Vector3 jump = new Vector3(0, 200, 0);
             //body.AddForce(jump);
             temp_vel.y = 4;
             body.velocity = temp_vel;
@@ -85,41 +87,55 @@ public class movementController : MonoBehaviour {
         }
         if (Input.GetKey(D_KEY)) {
             go_to_start();
-           // replay = true;
+            // replay = true;
         }
+
         if (Input.GetKey(F_KEY)) {
             foreach (GameObject traveller in time_travellers) {
-             //   traveller.GetComponent<timeTravel>().goBack(0);
-             //   traveller.GetComponent<Rigidbody>().velocity = Vector3.zero;
+                //   traveller.GetComponent<timeTravel>().goBack(0);
+                //   traveller.GetComponent<Rigidbody>().velocity = Vector3.zero;
                 if (traveller != Player) {
-                    traveller.GetComponent<timeTravel>().rewind = true;
-                    traveller.GetComponent<timeTravel>().on_rails = true;
+                    traveller.GetComponent<timeTravel>().pause = false;
+                    traveller.GetComponent<timeTravel>().rewind = false;
                 }
             }
-            // replay = true;
-        } else {
+            pause = false;
+        }
+        if (Input.GetKey(R_KEY)) {
+            foreach (GameObject traveller in time_travellers) {
+                //   traveller.GetComponent<timeTravel>().goBack(0);
+                //   traveller.GetComponent<Rigidbody>().velocity = Vector3.zero;
+                if (traveller != Player) {
+                    traveller.GetComponent<timeTravel>().rewind = true;
+                    traveller.GetComponent<timeTravel>().putOnRail();
+                    traveller.GetComponent<timeTravel>().pause = false;
+                }
+            }
+            pause = true;
+
+        } else if(pause) {
             foreach (GameObject traveller in time_travellers) {
                 //   traveller.GetComponent<timeTravel>().goBack(0);
                 //   traveller.GetComponent<Rigidbody>().velocity = Vector3.zero;
                 if (traveller != Player)
-                    traveller.GetComponent<timeTravel>().rewind = false;
+                    traveller.GetComponent<timeTravel>().pause = true;
             }
         }
         if (Input.GetKey(ONE)) {
             makeMain(0);
-       //     go_to_start();
+            //     go_to_start();
         }
         if (Input.GetKey(TWO)) {
             makeMain(1);
-       //     go_to_start();
+            //     go_to_start();
         }
         if (Input.GetKey(THREE)) {
             makeMain(2);
-           // go_to_start();
+            // go_to_start();
         }
         if (Input.GetKey(FOUR)) {
             makeMain(3);
-           // go_to_start();
+            // go_to_start();
         }
         //        Player.GetComponent<timeTravel>().last_velocity = Vector3.zero;
     }
@@ -131,22 +147,38 @@ public class movementController : MonoBehaviour {
         replay = false;
     }
     void makeMain(int num) {
+        if (Player != null) {
+            enableCollision(Player.GetComponent<timeTravel>().number);
+            Player.GetComponent<timeTravel>().main = false;
+        }
         Player = players[num];
         Player.GetComponent<timeTravel>().rewind = false;
         body = Player.GetComponent<Rigidbody>();
         Player.GetComponent<timeTravel>().last_velocity = Vector3.zero;
+        Player.GetComponent<timeTravel>().main = true;
+        enableCollision(num);
         for (int i = 0; i < players.Count; i++) {
             if (i == num)
                 continue;
-            for (int n = i + 1; n < players.Count; n++) {
-                if (n == num)
-                    continue;
-                Physics.IgnoreCollision(players[i].GetComponent<BoxCollider>(), players[n].GetComponent<BoxCollider>());
-            }
-            Physics.IgnoreCollision(players[i].GetComponent<BoxCollider>(), Player.GetComponent<BoxCollider>(),false);
+            if (players[i].GetComponent<timeTravel>().on_rails)
+                disableCollision(i);
         }
-
-
+    }
+    public void enableCollision(int num) {
+        for (int i = 0; i < players.Count; i++) {
+            if (num != i) {
+                Physics.IgnoreCollision(players[i].GetComponent<BoxCollider>(), players[num].GetComponent<BoxCollider>(), false);
+                Physics.IgnoreCollision(players[i].GetComponentInChildren<BoxCollider>(), players[num].GetComponentInChildren<BoxCollider>(), false);
+            }
+        }
+    }
+    public void disableCollision(int num) {
+        for (int i = 0; i < players.Count; i++) {
+            if (num != i && players[i].GetComponent<timeTravel>().main == false) {
+                Physics.IgnoreCollision(players[i].GetComponent<BoxCollider>(), players[num].GetComponent<BoxCollider>(), false);
+                Physics.IgnoreCollision(players[i].GetComponentInChildren<BoxCollider>(), players[num].GetComponentInChildren<BoxCollider>(), false);
+            }
+        }
     }
 }
 
