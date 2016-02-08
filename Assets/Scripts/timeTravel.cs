@@ -9,11 +9,12 @@ public class timeTravel : MonoBehaviour {
     public int number;
     moment[] moments = new moment[10000];
     int rail_stop = 0;
-    int index = 0;
+    public int index = 0;
   public  Vector3 last_velocity=Vector3.zero;
     public bool on_rails = false;
     Rigidbody body;
    public bool grounded = false;
+   public bool rewind = false;
     // Use this for initialization
     void Start() {
         body = GetComponent<Rigidbody>();
@@ -29,20 +30,23 @@ public class timeTravel : MonoBehaviour {
         }
 
         Vector3 rayOffset = new Vector3(0.22f, 0, 0);
-        grounded = Physics.Raycast(transform.position, Vector3.down, transform.localScale.y * .5f + 0.1f)
-            || Physics.Raycast(transform.position + rayOffset, Vector3.down, transform.localScale.y * .5f + 0.1f)
-            || Physics.Raycast(transform.position - rayOffset, Vector3.down, transform.localScale.y * .5f + 0.1f);
-        if (!on_rails) {
+        grounded = Physics.Raycast(transform.position, Vector3.down, transform.localScale.y * .5f + 0.01f)
+            || Physics.Raycast(transform.position + rayOffset, Vector3.down, transform.localScale.y * .5f + 0.01f)
+            || Physics.Raycast(transform.position - rayOffset, Vector3.down, transform.localScale.y * .5f + 0.01f);
+        if (!on_rails && !rewind) {
             moments[index].position = transform.position;
             moments[index].rotation = transform.rotation;
             rail_stop = index;
-            index++;
+            if(index==0 || moments[index].position != moments[index-1].position) index++;
             last_velocity = body.velocity;
 
         } else {
             transform.position = moments[index].position;
             transform.rotation = moments[index].rotation;
             body.velocity = Vector3.zero;
+            if (rewind && index > 0)
+                index--; 
+            else
             index++;
             if (index >= rail_stop)
                 derail();

@@ -8,9 +8,11 @@ public class movementController : MonoBehaviour {
     KeyCode RIGHT = KeyCode.RightArrow;
     KeyCode UP = KeyCode.UpArrow;
     KeyCode D_KEY = KeyCode.D;
+    KeyCode F_KEY = KeyCode.F;
     KeyCode ONE = KeyCode.Alpha1;
     KeyCode TWO = KeyCode.Alpha2;
     KeyCode THREE = KeyCode.Alpha3;
+    KeyCode FOUR = KeyCode.Alpha4;
     public List<GameObject> time_travellers;
     public List<GameObject> players;
     GameObject Player;
@@ -22,6 +24,7 @@ public class movementController : MonoBehaviour {
     bool grounded = false;
     bool replay = false;
     int current_player = 0;
+    float small_delay = 0;
     // Use this for initialization
     void Start() {
         moveControl = this;
@@ -53,26 +56,10 @@ public class movementController : MonoBehaviour {
         if (!replay) {
             Player.GetComponent<timeTravel>().derail();
         }
-        cam_target_position = Player.transform.position;
-        if (Player.GetComponent<timeTravel>().grounded)
-            cam_target_position += Vector3.up * 2f;
-        Vector3 to_player = transform.position - cam_target_position;
-        to_player.z = 0;
-        if (to_player.magnitude > 2) {
-            Vector3 new_pos = transform.position;
-            Vector3 displacement = cam_target_position - transform.position;
-            float multiplier = 1;
-            displacement.z = 0;
-            if (displacement.magnitude > 4)
-                multiplier = displacement.magnitude / 4;
-            displacement.Normalize();
-            displacement = displacement * 5f * multiplier * multiplier * Time.deltaTime;
-            while (to_player.magnitude < displacement.magnitude)
-                displacement = displacement * 0.9f;
-            new_pos += displacement;
-            transform.position = new_pos;
-
-        }
+        if (small_delay > 0)
+            small_delay -= Time.deltaTime;
+        if (small_delay < 0)
+            small_delay = 0;
         Vector3 temp_vel = body.velocity;
         temp_vel.x = 0;
         body.velocity = temp_vel;
@@ -88,32 +75,51 @@ public class movementController : MonoBehaviour {
             body.velocity = temp_vel;
         }
 
-        if (Input.GetKey(UP) && Player.GetComponent<timeTravel>().grounded) {
-            Vector3 jump = new Vector3(0, 100, 0);
-            body.AddForce(jump);
+        if (Input.GetKey(UP) && Player.GetComponent<timeTravel>().grounded && small_delay == 0) {
+           // Vector3 jump = new Vector3(0, 200, 0);
+            //body.AddForce(jump);
+            temp_vel.y = 4;
+            body.velocity = temp_vel;
             Player.GetComponent<timeTravel>().grounded = false;
+            small_delay = 0.1f;
         }
         if (Input.GetKey(D_KEY)) {
             go_to_start();
-            replay = true;
+           // replay = true;
+        }
+        if (Input.GetKey(F_KEY)) {
+            foreach (GameObject traveller in time_travellers) {
+             //   traveller.GetComponent<timeTravel>().goBack(0);
+             //   traveller.GetComponent<Rigidbody>().velocity = Vector3.zero;
+                if (traveller != Player) {
+                    traveller.GetComponent<timeTravel>().rewind = true;
+                    traveller.GetComponent<timeTravel>().on_rails = true;
+                }
+            }
+            // replay = true;
+        } else {
+            foreach (GameObject traveller in time_travellers) {
+                //   traveller.GetComponent<timeTravel>().goBack(0);
+                //   traveller.GetComponent<Rigidbody>().velocity = Vector3.zero;
+                if (traveller != Player)
+                    traveller.GetComponent<timeTravel>().rewind = false;
+            }
         }
         if (Input.GetKey(ONE)) {
-            Player = players[0];
-            body = Player.GetComponent<Rigidbody>();
-            Player.GetComponent<timeTravel>().last_velocity = Vector3.zero;
-            go_to_start();
+            makeMain(0);
+       //     go_to_start();
         }
         if (Input.GetKey(TWO)) {
-            Player = players[1];
-            body = Player.GetComponent<Rigidbody>();
-            Player.GetComponent<timeTravel>().last_velocity = Vector3.zero;
-            go_to_start();
+            makeMain(1);
+       //     go_to_start();
         }
         if (Input.GetKey(THREE)) {
-            Player = players[2];
-            body = Player.GetComponent<Rigidbody>();
-            Player.GetComponent<timeTravel>().last_velocity = Vector3.zero;
-            go_to_start();
+            makeMain(2);
+           // go_to_start();
+        }
+        if (Input.GetKey(FOUR)) {
+            makeMain(3);
+           // go_to_start();
         }
         //        Player.GetComponent<timeTravel>().last_velocity = Vector3.zero;
     }
@@ -124,4 +130,52 @@ public class movementController : MonoBehaviour {
         }
         replay = false;
     }
+    void makeMain(int num) {
+        Player = players[num];
+        Player.GetComponent<timeTravel>().rewind = false;
+        body = Player.GetComponent<Rigidbody>();
+        Player.GetComponent<timeTravel>().last_velocity = Vector3.zero;
+        for (int i = 0; i < players.Count; i++) {
+            if (i == num)
+                continue;
+            for (int n = i + 1; n < players.Count; n++) {
+                if (n == num)
+                    continue;
+                Physics.IgnoreCollision(players[i].GetComponent<BoxCollider>(), players[n].GetComponent<BoxCollider>());
+            }
+            Physics.IgnoreCollision(players[i].GetComponent<BoxCollider>(), Player.GetComponent<BoxCollider>(),false);
+        }
+
+
+    }
 }
+
+
+
+
+
+
+
+
+
+/* cam_target_position = Player.transform.position;
+if (Player.GetComponent<timeTravel>().grounded)
+cam_target_position += Vector3.up * 2f;
+Vector3 to_player = transform.position - cam_target_position;
+to_player.z = 0;
+if (to_player.magnitude > 2) {
+Vector3 new_pos = transform.position;
+Vector3 displacement = cam_target_position - transform.position;
+float multiplier = 1;
+displacement.z = 0;
+if (displacement.magnitude > 4)
+    multiplier = displacement.magnitude / 4;
+displacement.Normalize();
+displacement = displacement * 5f * multiplier * multiplier * Time.deltaTime;
+while (to_player.magnitude < displacement.magnitude)
+    displacement = displacement * 0.9f;
+new_pos += displacement;
+transform.position = new_pos;
+
+}
+*/
