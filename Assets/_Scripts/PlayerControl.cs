@@ -4,8 +4,7 @@ using System.Collections;
 //easy to add some more skills that could be context sensitive/enemy based
 public enum State { None, Fling, Boost }
 
-public struct Moment
-{
+public struct Moment {
     //possibly expand with sprite for animations
     public Vector3 position;
     public Vector3 velocity;
@@ -27,63 +26,55 @@ public class PlayerControl : MonoBehaviour {
     public float speed = 10f;
     public float jumpVel = 5f;
     public bool inAir = false;
-	public float rayOffset = 0.22f;
+    public float rayOffset = 0.22f;
 
-	public bool dead = false;
-	public int timeOfDeath = -1;
+    public bool dead = false;
+    public int timeOfDeath = -1;
 
     public Vector3 velocity;
 
     // Use this for initialization
-    void Start () {
+    void Start() {
         player = this;
         Moments = new Moment[2000];
     }
-	
-	// Update is called once per frame
-	void FixedUpdate () {
+
+    // Update is called once per frame
+    void FixedUpdate() {
         //only the selected player is active
-        if (!Main.MCU.rewind)
-        {
+        if (!Main.MCU.rewind) {
             Move();
-        }
-        else
-        {
+        } else {
             Rewind();
         }
 
-		if (Main.MCU.currentFrame < timeOfDeath) {
-			dead = false;
-		}
+        if (Main.MCU.currentFrame < timeOfDeath) {
+            dead = false;
+        }
     }
 
-    bool GroundCheck()
-    {
+    bool GroundCheck() {
         //requires that any floor be tagged and in layer "Ground"
-		return !(Physics.Raycast(transform.position, Vector3.down, rayOffset, Main.MCU.groundMask)
-			|| Physics.Raycast((transform.position + rayOffset * Vector3.left), Vector3.down, rayOffset, Main.MCU.groundMask)
-			|| Physics.Raycast((transform.position + rayOffset * Vector3.right), Vector3.down, rayOffset, Main.MCU.groundMask)
-			|| Physics.Raycast(transform.position, Vector3.down, rayOffset, Main.MCU.cloneMask)
-			|| Physics.Raycast((transform.position + rayOffset * Vector3.left), Vector3.down, rayOffset, Main.MCU.cloneMask)
-			|| Physics.Raycast((transform.position + rayOffset * Vector3.right), Vector3.down, rayOffset, Main.MCU.cloneMask));
+        return !(Physics.Raycast(transform.position, Vector3.down, rayOffset, Main.MCU.groundMask)
+            || Physics.Raycast((transform.position + rayOffset * Vector3.left), Vector3.down, rayOffset, Main.MCU.groundMask)
+            || Physics.Raycast((transform.position + rayOffset * Vector3.right), Vector3.down, rayOffset, Main.MCU.groundMask)
+            || Physics.Raycast(transform.position, Vector3.down, rayOffset, Main.MCU.cloneMask)
+            || Physics.Raycast((transform.position + rayOffset * Vector3.left), Vector3.down, rayOffset, Main.MCU.cloneMask)
+            || Physics.Raycast((transform.position + rayOffset * Vector3.right), Vector3.down, rayOffset, Main.MCU.cloneMask));
     }
 
-    void Move()
-    {
-		if (dead)
-			return;
+    void Move() {
+        if (dead)
+            return;
         inAir = GroundCheck();
 
         float horizontal_input = Input.GetAxis("Horizontal");
         velocity.x = horizontal_input * speed;
         float jump = Input.GetAxis("Jump");
 
-        if (jump > 0 && !inAir)
-        {
+        if (jump > 0 && !inAir) {
             velocity.y = jumpVel;
-        }
-        else
-        {
+        } else {
             velocity.y = this.GetComponent<Rigidbody>().velocity.y;
         }
         //adjust speed
@@ -93,8 +84,12 @@ public class PlayerControl : MonoBehaviour {
         Moments[Main.MCU.currentFrame].velocity = velocity;
     }
 
-    void Rewind()
-    {
+    void Rewind() {
         this.gameObject.transform.position = Moments[Main.MCU.currentFrame].position;
+    }
+
+   public void reset() {
+        transform.position = Moments[0].position;
+        GetComponent<Rigidbody>().velocity = Vector3.zero;
     }
 }
