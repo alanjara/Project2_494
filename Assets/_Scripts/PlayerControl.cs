@@ -2,7 +2,7 @@
 using System.Collections;
 
 //easy to add some more skills that could be context sensitive/enemy based
-public enum State { None, Fling, Boost }
+public enum State { None, Throw }
 
 public struct Moment {
     //possibly expand with sprite for animations
@@ -32,6 +32,10 @@ public class PlayerControl : MonoBehaviour {
     public int timeOfDeath = -1;
 
     public Vector3 velocity;
+
+    public Vector3 throwSpeed = new Vector3(10f, 2f, 0f);
+    public bool thrown;
+    public int throwDelay;
 
     // Use this for initialization
     void Start() {
@@ -83,6 +87,11 @@ public class PlayerControl : MonoBehaviour {
 
         Moments[Main.MCU.currentFrame].position = this.gameObject.transform.position;
         Moments[Main.MCU.currentFrame].velocity = velocity;
+
+        Moments[Main.MCU.currentFrame].type = State.None;
+        if (Input.GetKey(KeyCode.C) && velocity == Vector3.zero && !inAir){
+        	Moments[Main.MCU.currentFrame].type = State.Throw;
+        }
     }
 
     void Rewind() {
@@ -92,5 +101,25 @@ public class PlayerControl : MonoBehaviour {
    public void reset() {
         transform.position = Moments[0].position;
         GetComponent<Rigidbody>().velocity = Vector3.zero;
+    }
+
+    void OnTriggerEnter(Collider coll){
+    	if (coll.tag == "Player" && Clone.clone.type == State.Throw){
+    		GetThrown();
+    	}
+    }
+
+    void GetThrown(){
+    	thrown = true;
+    	throwDelay = Main.MCU.currentFrame + 30;
+    	if (velocity.x > 0){
+    		velocity = throwSpeed;
+    		this.GetComponent<Rigidbody>().velocity = velocity;
+    	}
+    	else {
+    		velocity = throwSpeed;
+    		velocity.x = -velocity.x;
+    		this.GetComponent<Rigidbody>().velocity = velocity;
+    	}
     }
 }
