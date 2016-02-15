@@ -7,6 +7,7 @@ public class Main : MonoBehaviour {
 
     //this is the current "time step" for storing or getting positions
     public int currentFrame;
+	public string nextLevelName;
     public GameObject playerPrefab;
     public GameObject clonePrefab;
     public bool inUse;
@@ -102,6 +103,7 @@ public class Main : MonoBehaviour {
     }
     void win() {
         //What should happen when the player wins
-        reset();
+        //reset();
+		Application.LoadLevel(nextLevelName);
     }
 }

@@ -36,7 +36,8 @@ public class PlayerControl : MonoBehaviour {
     // Use this for initialization
     void Start() {
         player = this;
-        Moments = new Moment[2000];
+		dead = false;
+		Moments = new Moment[2000];
     }
 
     // Update is called once per frame

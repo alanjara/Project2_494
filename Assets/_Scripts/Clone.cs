@@ -34,6 +34,7 @@ public class Clone : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+		this.tag = "Player";
         this.gameObject.transform.position = playback[Main.MCU.currentFrame - absOffset].position;
         if (Main.MCU.currentFrame - absOffset >= 179)
         {
