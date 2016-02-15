@@ -78,6 +78,10 @@ public class Main : MonoBehaviour {
         resetting = true;
         currentFrame = 0;
         PlayerControl.player.reset();
+        foreach(GameObject enemy in GameObject.FindGameObjectsWithTag("Enemy"))
+        {
+            enemy.GetComponent<Thwomp>().reset();
+        }
         if (inUse) {
             Destroy(Clone.clone.gameObject);
             inUse = false;

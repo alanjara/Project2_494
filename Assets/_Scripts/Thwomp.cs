@@ -10,6 +10,7 @@ public class Thwomp : MonoBehaviour {
     public bool grounded;
     int groundedCount;
     Vector3[] Moments;
+    bool[] AIStates;
     Vector3 startingPos;
     Rigidbody rigid;
     RigidbodyConstraints standardConstraints;
@@ -22,6 +23,7 @@ public class Thwomp : MonoBehaviour {
         groundedCount = 0;
         startingPos = transform.position;
         Moments = new Vector3[2000];
+        AIStates = new bool[2000];
         Moments[0] = transform.position;
         rigid = GetComponent<Rigidbody>();
         standardConstraints = rigid.constraints;
@@ -33,9 +35,10 @@ public class Thwomp : MonoBehaviour {
             grounded = true;
     }
 
-    void reset()
+    public void reset()
     {
         transform.position = startingPos;
+        rigid.constraints = standardConstraints;
         fall = false;
     }
 
@@ -59,6 +62,7 @@ public class Thwomp : MonoBehaviour {
         if (Camera.main.GetComponent<Main>().rewind)
         {
             transform.position = Moments[Camera.main.GetComponent<Main>().currentFrame];
+            fall = AIStates[Main.MCU.currentFrame];
             if(groundedCount > 0)
             {
                 groundedCount -= 1;
@@ -66,7 +70,7 @@ public class Thwomp : MonoBehaviour {
         }
         else
         {
-            Moments[Camera.main.GetComponent<Main>().currentFrame] = transform.position;
+            
             if (grounded)
             {
                 groundedCount += 1;
@@ -97,6 +101,10 @@ public class Thwomp : MonoBehaviour {
                 rigid.constraints = RigidbodyConstraints.FreezeAll;
                 rigid.velocity = Vector3.zero;
             }
+
+
+            Moments[Camera.main.GetComponent<Main>().currentFrame] = transform.position;
+            AIStates[Main.MCU.currentFrame] = fall;
         }
 	
 	}

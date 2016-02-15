@@ -15,11 +15,15 @@ public class Spikes : MonoBehaviour {
 
     void OnTriggerEnter(Collider other)
     {
-        print("Hit a trigger with a thwomp");
+        print("Hit a trigger with " + gameObject.name);
         if (other.gameObject.tag == "Player" && other.gameObject.name.Contains("Clone"))
         {
             Main.MCU.inUse = false;
             Destroy(other.gameObject);
+        }
+        if (other.gameObject.tag == "Player" && other.gameObject.name.Contains("Player"))
+        {
+            Main.MCU.reset();
         }
     }
 }
