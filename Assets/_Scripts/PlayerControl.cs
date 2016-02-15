@@ -70,9 +70,9 @@ public class PlayerControl : MonoBehaviour {
 
         float horizontal_input = Input.GetAxis("Horizontal");
         velocity.x = horizontal_input * speed;
-        float jump = Input.GetAxis("Jump");
+        bool jump = Input.GetKey(KeyCode.Space);
 
-        if (jump > 0 && !inAir) {
+        if (jump && !inAir) {
             velocity.y = jumpVel;
         } else {
             velocity.y = this.GetComponent<Rigidbody>().velocity.y;
