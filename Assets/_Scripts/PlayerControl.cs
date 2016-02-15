@@ -53,6 +53,10 @@ public class PlayerControl : MonoBehaviour {
             Rewind();
         }
 
+        if (Main.MCU.currentFrame >= throwDelay){
+        	thrown = false;
+        }
+
         if (Main.MCU.currentFrame < timeOfDeath) {
             dead = false;
         }
@@ -96,6 +100,7 @@ public class PlayerControl : MonoBehaviour {
 
     void Rewind() {
         this.gameObject.transform.position = Moments[Main.MCU.currentFrame].position;
+        thrown = false;
     }
 
    public void reset() {
