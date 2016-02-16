@@ -23,7 +23,9 @@ public class Spikes : MonoBehaviour {
         }
         if (other.gameObject.tag == "Player" && other.gameObject.name.Contains("Player"))
         {
-            Main.MCU.reset();
+			Main.MCU.reset ();
+			//other.GetComponent<PlayerControl> ().dead = true;
+			//other.GetComponent<PlayerControl> ().timeOfDeath = Main.MCU.currentFrame;
         }
     }
 }

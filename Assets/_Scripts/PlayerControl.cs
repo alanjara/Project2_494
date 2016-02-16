@@ -27,10 +27,10 @@ public class PlayerControl : MonoBehaviour {
     public float jumpVel = 5f;
     public bool inAir = false;
     public float rayOffset = 0.22f;
-
+	public State myState;
     public bool dead = false;
     public int timeOfDeath = -1;
-
+	public Mesh basicCube, basicSphere;
     public Vector3 velocity;
 
     public Vector3 throwSpeed = new Vector3(10f, 2f, 0f);
@@ -41,18 +41,44 @@ public class PlayerControl : MonoBehaviour {
     void Start() {
         player = this;
 		dead = false;
+		timeOfDeath = 250000;
 		Moments = new Moment[2000];
     }
 
     // Update is called once per frame
     void FixedUpdate() {
         //only the selected player is active
-        if (!Main.MCU.rewind) {
+		if (!Main.MCU.rewind) {
             Move();
         } else {
+			if (Main.MCU.currentFrame < 5) {
+				GetComponent<Rigidbody> ().useGravity = false;
+				GetComponent<Rigidbody> ().velocity = Vector3.zero;
+			} else {
+				GetComponent<Rigidbody> ().useGravity = true;
+			}
             Rewind();
         }
 
+		//render different states
+		if (myState == State.Throw) {
+			GetComponent<MeshFilter> ().mesh = basicSphere;
+		} else {
+			GetComponent<MeshFilter> ().mesh = basicCube;
+		}
+
+        if (Main.MCU.currentFrame >= throwDelay){
+        	thrown = false;
+        }
+		if (dead) {
+			this.GetComponent<Rigidbody> ().velocity = Vector3.zero;
+			this.GetComponent<Rigidbody> ().useGravity = false;
+			this.GetComponent<BoxCollider> ().enabled = false;
+			//velocity = Vector3.zero;
+		} else {
+			this.GetComponent<BoxCollider> ().enabled = true;
+			this.GetComponent<Rigidbody> ().useGravity = true;
+		}
         if (Main.MCU.currentFrame >= throwDelay){
         	thrown = false;
         }
@@ -60,6 +86,10 @@ public class PlayerControl : MonoBehaviour {
         if (Main.MCU.currentFrame < timeOfDeath) {
             dead = false;
         }
+
+		if (Main.MCU.currentFrame > timeOfDeath + 0) {
+			Main.MCU.reset ();
+		}
     }
 
     bool GroundCheck() {
@@ -73,6 +103,8 @@ public class PlayerControl : MonoBehaviour {
     }
 
     void Move() {
+		if (thrown)
+			return;
         if (dead)
             return;
         inAir = GroundCheck();
@@ -96,19 +128,23 @@ public class PlayerControl : MonoBehaviour {
         if (Input.GetKey(KeyCode.C) && velocity == Vector3.zero && !inAir){
         	Moments[Main.MCU.currentFrame].type = State.Throw;
         }
+		myState = Moments [Main.MCU.currentFrame].type;
     }
 
     void Rewind() {
         this.gameObject.transform.position = Moments[Main.MCU.currentFrame].position;
         thrown = false;
+		myState = Moments [Main.MCU.currentFrame].type;
     }
 
    public void reset() {
+		thrown = false;
         transform.position = Moments[0].position;
         GetComponent<Rigidbody>().velocity = Vector3.zero;
     }
 
     void OnTriggerEnter(Collider coll){
+		print ("collided with " + coll.gameObject.name);
     	if (coll.tag == "Player" && Clone.clone.type == State.Throw){
     		GetThrown();
     	}
@@ -116,7 +152,7 @@ public class PlayerControl : MonoBehaviour {
 
     void GetThrown(){
     	thrown = true;
-    	throwDelay = Main.MCU.currentFrame + 30;
+    	throwDelay = Main.MCU.currentFrame + 45;
     	if (velocity.x > 0){
     		velocity = throwSpeed;
     		this.GetComponent<Rigidbody>().velocity = velocity;
