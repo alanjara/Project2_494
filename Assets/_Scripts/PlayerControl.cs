@@ -104,7 +104,13 @@ public class PlayerControl : MonoBehaviour {
 
     void Move() {
 		if (thrown)
-			return;
+        {
+            Moments[Main.MCU.currentFrame].position = this.gameObject.transform.position;
+            Moments[Main.MCU.currentFrame].velocity = velocity;
+            Moments[Main.MCU.currentFrame].type = State.None;
+            return;
+        }
+			
         if (dead)
             return;
         inAir = GroundCheck();
