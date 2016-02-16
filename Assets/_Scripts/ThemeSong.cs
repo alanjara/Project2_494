@@ -5,17 +5,21 @@ public class ThemeSong : MonoBehaviour {
     public AudioSource speaker;
 	// Use this for initialization
 	void Start () {
+		DontDestroyOnLoad (this);
         speaker = GetComponent<AudioSource>();
 	}
 	
 	// Update is called once per frame
 	void Update () {
-        if (Main.MCU.rewind)
+		if ((Application.loadedLevelName != "Menu" && Application.loadedLevelName != "ThanksForPlaying"))
         {
-            speaker.Pause();
+			if(Main.MCU.rewind){
+          	  speaker.Pause();
+			}
+			else
+				speaker.UnPause();
         }
-        else
-            speaker.UnPause();
+        
 	
 	}
 }

@@ -115,9 +115,13 @@ public class PlayerControl : MonoBehaviour {
             return;
         inAir = GroundCheck();
 
+		if(GetComponent<Rigidbody>().velocity.magnitude < .05f){
+			GetComponent<Rigidbody>().velocity = Vector3.zero;
+		}
+
         float horizontal_input = Input.GetAxis("Horizontal");
         velocity.x = horizontal_input * speed;
-        bool jump = Input.GetKey(KeyCode.Space);
+		bool jump = Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.UpArrow);
 
         if (jump && !inAir) {
             velocity.y = jumpVel;
@@ -131,7 +135,7 @@ public class PlayerControl : MonoBehaviour {
         Moments[Main.MCU.currentFrame].velocity = velocity;
 
         Moments[Main.MCU.currentFrame].type = State.None;
-        if (Input.GetKey(KeyCode.C) && velocity == Vector3.zero && !inAir){
+		if ((Input.GetKey(KeyCode.A))&& velocity == Vector3.zero && !inAir){
         	Moments[Main.MCU.currentFrame].type = State.Throw;
         }
 		myState = Moments [Main.MCU.currentFrame].type;

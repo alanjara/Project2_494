@@ -38,10 +38,17 @@ public class Main : MonoBehaviour {
     }
 
     // Update is called once per frame
-    void Update() {
+	void Update() {
+		if (Input.GetKeyDown (KeyCode.Backspace) || Input.GetKeyDown(KeyCode.Escape)) {
+			Destroy(GameObject.FindGameObjectWithTag("Song"));
+			Application.LoadLevel ("Menu");
+		}
+		if (Input.GetKeyDown (KeyCode.Return) ){
+			Application.LoadLevel (nextLevelName);
+		}
         if (!resetting) {
             //pressing "V" acts to reset the current playback and go to character select
-            if (Input.GetKeyDown(KeyCode.V) || Input.GetKeyDown(KeyCode.JoystickButton2)) {
+            if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.JoystickButton2)) {
                 rewind = true;
 				currentFrame--; //force one rewind
                 rewindStart = currentFrame;
@@ -51,7 +58,7 @@ public class Main : MonoBehaviour {
                     inUse = false;
                 }
             }
-            if (Input.GetKeyUp(KeyCode.V) || Input.GetKeyUp(KeyCode.JoystickButton2)) {
+            if (Input.GetKeyUp(KeyCode.S) || Input.GetKeyUp(KeyCode.JoystickButton2)) {
                 rewind = false;
                 GameObject cgo = Instantiate(clonePrefab, PlayerControl.player.transform.position, Quaternion.identity) as GameObject;
                 inUse = true;
